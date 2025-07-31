@@ -1,38 +1,35 @@
-package main
+package api
 
 import (
-	"log"
-	"net/http"
+    "net/http"
+    "qr-code-generator/pkg/config"
+    "qr-code-generator/pkg/models"
+    "qr-code-generator/pkg/routes"
 
-	"qr-code-generator/pkg/config"
-	"qr-code-generator/pkg/models"
-	"qr-code-generator/pkg/routes"
-
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
+    "github.com/gorilla/mux"
+    "github.com/rs/cors"
 )
 
-func main() {
-	// Initialize database connection
-	config.Connect()
-	db := config.GetDB()
-	models.SetDB(db)
+var handler http.Handler
 
-	db.AutoMigrate(&models.QRCode{})
+func init() {
+    config.Connect()
+    db := config.GetDB()
+    models.SetDB(db)
+    db.AutoMigrate(&models.QRCode{})
 
-	// Use Gorilla Mux
-	router := mux.NewRouter()
-	routes.RegisterQRCodeGeneratorstoreRoutes(router)
+    router := mux.NewRouter()
+    routes.RegisterQRCodeGeneratorstoreRoutes(router)
 
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // React dev server
-		AllowCredentials: true,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
-	})
-	handler := c.Handler(router)
+    c := cors.New(cors.Options{
+        AllowedOrigins:   []string{"*"},
+        AllowCredentials: true,
+        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowedHeaders:   []string{"*"},
+    })
+    handler = c.Handler(router)
+}
 
-	log.Println("Starting server on localhost:8080...")
-	log.Fatal(http.ListenAndServe("localhost:8080", handler)) // Use mux router here
-
+func Handler(w http.ResponseWriter, r *http.Request) {
+    handler.ServeHTTP(w, r)
 }
