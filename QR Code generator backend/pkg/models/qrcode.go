@@ -42,7 +42,7 @@ func (code *QRCode) Generate() ([]byte, error) {
 		return nil, err1
 	}
 	//URL to be generated automatically and to be added as a URL to the QR code
-	code.URL = "http://localhost:8080/qrcode/" + token
+	code.URL = "https://your-app-name.vercel.app/api/endpoint/qrcode/" + token
 
 	code.Token = token
 
